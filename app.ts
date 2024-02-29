@@ -1,23 +1,42 @@
 import postgres from "postgres";
 
 const sql = postgres({
-	database: "YourDB", // Replace with your DB name.
+	database: "PokemonDB", // Replace with your DB name.
 });
 
-// --- Start of your code ---
+const connection = await sql.reserve();
 
-/**
- * Please read the exercise for more detailed instructions.
- *
- * 1. Declare the interface.
- * 2. Declare the variable using the interface as the type.
- * 3. INSERT a new row and retrieve the newly inserted ID.
- * 4. SELECT the new row.
- * 5. (Optional) UPDATE the row.
- * 6. (Optional) DELETE the row.
- * 7. console.log() after each operation.
- */
+interface Pokemon {
+	name: string;
+	type: string;
+}
 
-// --- End of your code ---
+const pokemon = {
+	name: "Pikachu",
+	type: "Electric",
+};
 
+const result = await connection<Pokemon[]>`
+		INSERT INTO pokemon
+			(name, type)
+		VALUES
+			(${pokemon.name}, ${pokemon.type})
+		RETURNING id
+	`;
+
+console.log("Inserted?", result);
+
+const results = await connection<Pokemon[]>`
+		SELECT *
+		FROM pokemon
+		WHERE id = 1
+	`;
+
+if (results.length === 0) {
+	console.log("bad");
+}
+
+console.log("Selected?", results);
+
+await connection.release();
 await sql.end();
